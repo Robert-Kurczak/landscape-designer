@@ -1,0 +1,15 @@
+*{
+    font-family: 'Share Tech Mono', monospace;
+    color: #E2EBFA;
+}
+
+body{
+    background-color: #141414;
+}
+
+#main_window {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
