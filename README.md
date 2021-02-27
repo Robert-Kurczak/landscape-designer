@@ -4,6 +4,9 @@ The project was created as part of learning algorithms for procedural content ge
 
 ## Table of Contents
 * [General info](#general-info)
+* [Technologies](#technologies)
+* [Setup](#setup)
+* [Sources](#sources)
 
 ## General info
 The tool is a local website, build with HTML, CSS and JavaScript. It's operation is based on generating pseudo random numbers and using simplified version of Perlin Noise to make them look more "natural". Generated values then, are being draw on screen as a 1D plot or 2D plane. End user can manipulate given results using built interface with variety of options, which supports operating on multiple layers. Each layer stores separate terrain with manipulatable settings for it. Website uses localStorage to save work so, refreshing page or even rebooting computer won't cause work loss.
