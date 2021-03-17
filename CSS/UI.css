@@ -1,9 +1,53 @@
-#settings{
-    float: right;
+#settings, #layer_panel{
+    position: absolute;
+    right: 1%;
+    top: 50%;
+    transform: translateY(-50%);
     width: 25%;
     padding: 10px;
     background-color: #212121;
     box-shadow: 0px 0px 15px 2px black;
+    z-index: 1;
+}
+
+#layer_panel{
+    position: absolute;
+    left: 1%;
+    top: 13%;
+    transform: translateY(0);
+    text-align: center;
+    border-collapse: collapse;
+    width: 18%;
+}
+
+#layer_panel td{
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+}
+
+#layer_panel tr{
+    transition-duration: 0.3s;
+}
+
+#layer_panel tr:hover{
+    background-color: #141414;
+}
+
+.layer_marker{
+    display: inline-block;
+    vertical-align: middle;
+    background-color: #3D5AFE;
+    border-radius: 5px;
+    padding: 12px;
+    margin-left: 10px;
+}
+
+.layer_name p{
+    transform: translateX(-35px);
+}
+
+.add_layer_button p{
+    margin: 2% 0 2% 0;
 }
 
 /*---------------Sliders---------------*/

@@ -1,35 +1,51 @@
-const mainWindow = document.getElementById("main_window");
-const mainLayer = new Map();
+import {Map} from "./modules/valuemap.mjs";
+import {UI} from "./modules/UI.mjs";
 
-function saveSettings(){
-    localStorage.setItem("MLsettings", true);
+window.TERRAINMAP = new Map;
+window.PREVIEW2D = document.getElementById("preview_2D");
 
-    localStorage.setItem("MLseed", mainLayer.seed);
-    localStorage.setItem("MLdimension", mainLayer.dimension);
-    localStorage.setItem("MLoctavesAmount", mainLayer.octavesAmount);
-    localStorage.setItem("MLscaleDivider", mainLayer.scaleDivider);
-    localStorage.setItem("MLheightFactor", mainLayer.heightFactor);
-    localStorage.setItem("MLheightOffset", mainLayer.heightOffset);
+//---Save/Load system---
+window.saveSettings = function saveSettings(){
+    var dataToStore = [];
+
+    //Removing matrixes (too large to store)
+    for(var layer of TERRAINMAP.layers){
+        var layerCopy = {...layer};
+
+        layerCopy.valueMatrixRaw = [];
+        layerCopy.valueMatrix = [];
+
+        dataToStore.push(layerCopy);
+    }
+
+    localStorage.setItem("layersData", JSON.stringify(dataToStore));
 }
 
-function loadSettings(){
-    mainLayer.seed = localStorage.getItem("MLseed");
-    mainLayer.dimension = +localStorage.getItem("MLdimension");
-    mainLayer.octavesAmount = +localStorage.getItem("MLoctavesAmount");
-    mainLayer.scaleDivider = +localStorage.getItem("MLscaleDivider");
-    mainLayer.heightFactor = +localStorage.getItem("MLheightFactor");
-    mainLayer.heightOffset = +localStorage.getItem("MLheightOffset");
+window.loadSettings = function loadSettings(){
+    TERRAINMAP.layers = JSON.parse(localStorage.getItem("layersData"));
 }
 
-window.onbeforeunload = saveSettings;
+//window.onbeforeunload = saveSettings(TERRAINMAP.layers);
 
-if(localStorage.getItem("MLsettings") === null){
-    saveSettings();
+localStorage.getItem("layersData") === null ? window.saveSettings(TERRAINMAP.layers) : window.loadSettings();
+//------
+
+//---Functions connecting modules---
+window.newLayer = function newLayer(){
+    TERRAINMAP.layers.push(new mapLayer);
+    UI.addLayerNode();
 }
-else{
-    loadSettings();
+//------
+
+function initialize(){
+    UI.octaveSlider.setAttribute("max", Math.floor(Math.log2(TERRAINMAP.width)) + 1);
+
+    UI.updateUIValues(TERRAINMAP.layers[0]);
+    
+    TERRAINMAP.fillMatrixes();
+    TERRAINMAP.smooth(0);
+    TERRAINMAP.mergeLayers();
+    TERRAINMAP.printTerrain(PREVIEW2D);
 }
 
-mainLayer.generateNoise();
-mainLayer.smooth();
-mainLayer.printTerrain(mainWindow);
+initialize();

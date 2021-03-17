@@ -6,10 +6,23 @@
         <link rel="stylesheet" href="CSS/style.css">
         <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
+        <script type="module" src="JS/modules/shader.mjs"></script>
+        <script type="module" src="JS/modules/layers.mjs"></script>
+        <script type="module" src="JS/modules/valuemap.mjs"></script>
+        <script type="module" src="JS/modules/UI.mjs"></script>
+
         <title>Generator</title>
     </head>
 
     <body>
+        <table id="layer_panel">
+            <tr><td><span class="layer_marker"></span></td><td class="layer_name"><p>Main layer</p></td><td></td></tr>
+
+            <tr><td colspan="3" class="add_layer_button" onclick="newLayer()"><p>Add layer</p></td><td></td></tr>
+        </table>
+
+        <canvas id="preview_2D"></canvas>
+
         <form id="settings" autocomplete="off">
             <p class="section_label">Perlin noise values</p>
             <div class="UI_hr_stripe"></div>
@@ -17,7 +30,7 @@
             <p>Octaves:</p>
             <input
                 id="octave_slider"
-                oninput="updateTerrain('mainLayer', 'octavesAmount', +this.value);"
+                oninput="window.TERRAINMAP.updateLayer(0, 'octavesAmount', +this.value, window.PREVIEW2D);"
                 type="range" min="0"
             >
             <br>
@@ -25,17 +38,18 @@
             <p>Scale:</p>
             <input
                 id="scale_slider"
-                oninput="updateTerrain('mainLayer', 'scaleDivider', +this.value);"
+                oninput="window.TERRAINMAP.updateLayer(0, 'scaleDivider', +this.value, window.PREVIEW2D);"
                 type="range" min="0.0001" max="10" step="0.1"
             >
             <br>
 
             <label>
-                Seed: <input onchange="updateTerrain('mainLayer', 'seed', this.value, true);" id="seed_input" type="text">
-            </label>
-            
-            <label>
-                Dimension: <input onchange="updateTerrain('mainLayer', 'dimension', +this.value, true);" id="dimension_input" type="number" min="1" max="2">
+                Seed:
+                <input
+                    id="seed_input"
+                    onchange="window.TERRAINMAP.updateLayer(0, 'seed', +this.value, window.PREVIEW2D);"
+                    type="text"
+                >
             </label>
 
             <p class="section_label">Display values</p>
@@ -44,7 +58,7 @@
             <p>Height factor:</p>
             <input
                 id="height_factor_slider"
-                oninput="updateTerrain('mainLayer', 'heightFactor', +this.value);"
+                oninput="TERRAINMAP.updateLayer(0, 'heightFactor', +this.value, window.PREVIEW2D);"
                 type="range" min="0" max="2000" step="0.1"
             >
             <br>
@@ -52,18 +66,15 @@
             <p class="UI_slider_label">Height offset:</p>
             <input
                 id="height_offset_slider"
-                oninput="updateTerrain('mainLayer', 'heightOffset', +this.value);"
+                oninput="TERRAINMAP.updateLayer(0, 'heightOffset', +this.value, window.PREVIEW2D);"
                 type="range" min="-600" max="600" step="0.1"
             >
             <br>
         </form>
 
-        <canvas id="main_window"></canvas>
     </body>
 
+    <script src="JS/controll.js"></script>
     <script src="JS/seedrandom.js"></script>
-    <script src="JS/shader.js"></script>
-    <script src="JS/valuemap.js"></script>
-    <script src="JS/main.js"></script>
-    <script src="JS/UI.js"></script>
+    <script type="module" src="JS/main.js"></script>
 </html>
