@@ -1,31 +1,49 @@
 export class UI{
-    static layerCounter = 1;
-
     //Input
-    static octaveSlider = document.querySelector("#octave_slider");
-    static scaleSlider = document.querySelector("#scale_slider");
-    static seedInput = document.querySelector("#seed_input");
-    static heightFactorSlider = document.querySelector("#height_factor_slider");
-    static heightOffsetSlider = document.querySelector("#height_offset_slider");
+    static octaveSlider = $("#octave_slider");
+    static scaleSlider = $("#scale_slider");
+    static seedInput = $("#seed_input");
+    static heightFactorSlider = $("#height_factor_slider");
+    static heightOffsetSlider = $("#height_offset_slider");
 
-    static layerPanel = document.querySelector("#layer_panel tbody");
+    static saveStatus = $("#save_status");
+    static layersPanel = $("#layers_panel");
     
     static updateUIValues(layer){
-        UI.octaveSlider.setAttribute("value", layer.octavesAmount);
-        UI.scaleSlider.setAttribute("value", layer.scaleDivider);
-        UI.seedInput.setAttribute("value", layer.seed);
-        UI.heightFactorSlider.setAttribute("value", layer.heightFactor);
-        UI.heightOffsetSlider.setAttribute("value", layer.heightOffset);
+        UI.octaveSlider.val(layer.octavesAmount);
+        UI.scaleSlider.val(layer.scaleDivider);
+        UI.seedInput.val(layer.seed);
+        UI.heightFactorSlider.val(layer.heightFactor);
+        UI.heightOffsetSlider.val(layer.heightOffset);
     }
 
-    static addLayerNode(){
-        var layerHTML = "<td><span class='layer_marker'></span></td><td class='layer_name'><p>Layer" + UI.layerCounter + "</p></td><td>X</td>";
-        
-        var layerNode = document.createElement("tr");
-        layerNode.innerHTML = layerHTML;
+    static layerCounter = 0;
 
-        UI.layerPanel.insertBefore(layerNode, UI.layerPanel.childNodes[UI.layerCounter + 1]);
+    static addLayerNode(){
+        var randomColor = "rgb("
+            + (Math.floor(Math.random() * 255) + 1) +
+            ", " + (Math.floor(Math.random() * 255) + 1) +
+            ", " + (Math.floor(Math.random() * 255) + 1) + ")";
+
+        var layerHTML = `
+            <div class="layer_node">
+                <div class="layer_selector" onclick="changeLayer(this)">
+                    <span class="layer_marker" style="background-color: ` + randomColor + `;"></span><p class="layer_name">Layer ` + this.layerCounter + `</p>
+                </div
+                ><div class="remove_layer_button" onclick="deleteLayer(this.parentNode); checkChanges();">
+                    <p>x</p>
+                </div>
+            </div>
+        `;
+
+        this.layersPanel.children().last().before(layerHTML);
 
         UI.layerCounter++;
+    }
+
+    static removeLayerNode(node){
+        if(confirm("Do you want to remove this layer?")){
+            node.remove();
+        }
     }
 }

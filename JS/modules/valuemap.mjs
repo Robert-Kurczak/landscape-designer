@@ -6,7 +6,7 @@ export class Map{
         this.width = 512;
         this.height = 512;
 
-        this.layers = [new mapLayer];
+        this.layers = [];
 
         //For storing resultant data of all layers
         //This variable is updated with mergeLayers method
@@ -81,17 +81,14 @@ export class Map{
 
     //Generate valueMatrixRaw and valueMatrix, based on layer settings
     //Used for loading data from localStorage
-    fillMatrixes(){
-        for(let nLayer in this.layers){
-            this.generateNoise(nLayer);
-            this.smooth(nLayer);
-        }
+    fillMatrixes(nLayer){
+        this.generateNoise(nLayer);
+        this.smooth(nLayer);
     }
 
     //Merging all layers into 1, for printing.
     //Should be called before printTerrain() to update mergedMatrix
     mergeLayers(){
-        //Copy of main layer
         this.mergedMatrix = [];
 
         for(let y = 0; y < this.height; y++){
@@ -197,6 +194,10 @@ export class Map{
         }
 
         if(canvas){
+            if(property == 'seed'){
+                this.generateNoise(nLayer);
+            }
+            
             this.smooth(nLayer);
             this.mergeLayers();
             this.printTerrain(canvas);

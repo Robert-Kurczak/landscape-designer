@@ -6,31 +6,46 @@
         <link rel="stylesheet" href="CSS/style.css">
         <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
+        <script src="JS/jquery-3.6.0.min.js"></script>
+
         <script type="module" src="JS/modules/shader.mjs"></script>
         <script type="module" src="JS/modules/layers.mjs"></script>
         <script type="module" src="JS/modules/valuemap.mjs"></script>
         <script type="module" src="JS/modules/UI.mjs"></script>
+        <script type="module" src="JS/modules/main.mjs"></script>
 
         <title>Generator</title>
     </head>
 
     <body>
-        <table id="layer_panel">
-            <tr><td><span class="layer_marker"></span></td><td class="layer_name"><p>Main layer</p></td><td></td></tr>
+        <div id="upper_panel">
+            <p id="save_status">Changes saved</p>
+            <div class="save_button" onclick="saveSettings();"><p>Save</p></div>
+        </div>
 
-            <tr><td colspan="3" class="add_layer_button" onclick="newLayer()"><p>Add layer</p></td><td></td></tr>
-        </table>
+        <div id="layers_panel">
+            <!-- <div class="layer_node">
+                <div class="layer_selector" onclick="changeLayer(0)">
+                    <span class="layer_marker"></span><p class="layer_name">Main layer</p>
+                </div
+                ><div class="remove_layer_button">
+                    <p>x</p>
+                </div>
+            </div> -->
+
+            <div class="add_layer_button" onclick="newLayer(); checkChanges();"><p>Add new layer</p></div>
+        </div>
 
         <canvas id="preview_2D"></canvas>
 
-        <form id="settings" autocomplete="off">
+        <div id="settings" >
             <p class="section_label">Perlin noise values</p>
             <div class="UI_hr_stripe"></div>
 
             <p>Octaves:</p>
             <input
                 id="octave_slider"
-                oninput="window.TERRAINMAP.updateLayer(0, 'octavesAmount', +this.value, window.PREVIEW2D);"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'octavesAmount', +this.value, PREVIEW2D); checkChanges();"
                 type="range" min="0"
             >
             <br>
@@ -38,7 +53,7 @@
             <p>Scale:</p>
             <input
                 id="scale_slider"
-                oninput="window.TERRAINMAP.updateLayer(0, 'scaleDivider', +this.value, window.PREVIEW2D);"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'scaleDivider', +this.value, PREVIEW2D); checkChanges();"
                 type="range" min="0.0001" max="10" step="0.1"
             >
             <br>
@@ -47,7 +62,7 @@
                 Seed:
                 <input
                     id="seed_input"
-                    onchange="window.TERRAINMAP.updateLayer(0, 'seed', +this.value, window.PREVIEW2D);"
+                    onchange="TERRAINMAP.updateLayer(currentLayer, 'seed', this.value, PREVIEW2D); checkChanges();"
                     type="text"
                 >
             </label>
@@ -58,7 +73,7 @@
             <p>Height factor:</p>
             <input
                 id="height_factor_slider"
-                oninput="TERRAINMAP.updateLayer(0, 'heightFactor', +this.value, window.PREVIEW2D);"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'heightFactor', +this.value, PREVIEW2D); checkChanges();"
                 type="range" min="0" max="2000" step="0.1"
             >
             <br>
@@ -66,15 +81,14 @@
             <p class="UI_slider_label">Height offset:</p>
             <input
                 id="height_offset_slider"
-                oninput="TERRAINMAP.updateLayer(0, 'heightOffset', +this.value, window.PREVIEW2D);"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'heightOffset', +this.value, PREVIEW2D); checkChanges();"
                 type="range" min="-600" max="600" step="0.1"
             >
             <br>
-        </form>
+        </div>
 
     </body>
 
     <script src="JS/controll.js"></script>
     <script src="JS/seedrandom.js"></script>
-    <script type="module" src="JS/main.js"></script>
 </html>
