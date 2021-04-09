@@ -7,6 +7,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
         <script src="JS/jquery-3.6.0.min.js"></script>
+        <script src="JS/seedrandom.js"></script>
 
         <script type="module" src="JS/modules/shader.mjs"></script>
         <script type="module" src="JS/modules/layers.mjs"></script>
@@ -36,7 +37,11 @@
             <div class="add_layer_button" onclick="newLayer(); checkChanges();"><p>Add new layer</p></div>
         </div>
 
-        <canvas id="preview_2D"></canvas>
+        <div id="previews">
+            <canvas id="preview_1D"></canvas>
+            <canvas id="preview_2D"></canvas>
+            <canvas id="preview_3D"></canvas>
+        </div>
 
         <div id="settings" >
             <p class="section_label">Perlin noise values</p>
@@ -45,7 +50,7 @@
             <p>Octaves:</p>
             <input
                 id="octave_slider"
-                oninput="TERRAINMAP.updateLayer(currentLayer, 'octavesAmount', +this.value, PREVIEW2D); checkChanges();"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'octavesAmount', +this.value); printTerrain(); checkChanges();"
                 type="range" min="0"
             >
             <br>
@@ -53,7 +58,7 @@
             <p>Scale:</p>
             <input
                 id="scale_slider"
-                oninput="TERRAINMAP.updateLayer(currentLayer, 'scaleDivider', +this.value, PREVIEW2D); checkChanges();"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'scaleDivider', +this.value); printTerrain(); checkChanges();"
                 type="range" min="0.0001" max="10" step="0.1"
             >
             <br>
@@ -62,7 +67,7 @@
                 Seed:
                 <input
                     id="seed_input"
-                    onchange="TERRAINMAP.updateLayer(currentLayer, 'seed', this.value, PREVIEW2D); checkChanges();"
+                    onchange="TERRAINMAP.updateLayer(currentLayer, 'seed', this.value); printTerrain(); checkChanges();"
                     type="text"
                 >
             </label>
@@ -73,7 +78,7 @@
             <p>Height factor:</p>
             <input
                 id="height_factor_slider"
-                oninput="TERRAINMAP.updateLayer(currentLayer, 'heightFactor', +this.value, PREVIEW2D); checkChanges();"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'heightFactor', +this.value); printTerrain(); checkChanges();"
                 type="range" min="0" max="2000" step="0.1"
             >
             <br>
@@ -81,14 +86,11 @@
             <p class="UI_slider_label">Height offset:</p>
             <input
                 id="height_offset_slider"
-                oninput="TERRAINMAP.updateLayer(currentLayer, 'heightOffset', +this.value, PREVIEW2D); checkChanges();"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'heightOffset', +this.value); printTerrain(); checkChanges();"
                 type="range" min="-600" max="600" step="0.1"
             >
             <br>
         </div>
 
     </body>
-
-    <script src="JS/controll.js"></script>
-    <script src="JS/seedrandom.js"></script>
 </html>

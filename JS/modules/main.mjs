@@ -1,10 +1,56 @@
 import {Map} from "./valuemap.mjs";
 import {UI} from "./UI.mjs";
 import {mapLayer} from "./layers.mjs";
+import {defaultShader} from "./shader.mjs";
 
-window.TERRAINMAP = new Map;
-window.PREVIEW2D = document.getElementById("preview_2D");
+window.TERRAINMAP = new Map(512, 512, defaultShader);
 window.currentLayer = 0;
+
+window.show1DPreview = false;
+window.show2DPreview = true;
+window.show3DPreview = false;
+
+//---Functions for printing generated map to previews---
+window.print2D = function(){
+    var canvas = UI.preview2D[0];
+
+    var ctx = canvas.getContext("2d");
+    var canvasData = ctx.createImageData(TERRAINMAP.width, TERRAINMAP.height);
+
+    canvas.width = TERRAINMAP.width;
+    canvas.height = TERRAINMAP.height;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    TERRAINMAP.mergeLayers();
+
+    var yIndex = 0;
+    var xIndex = 0;
+    for(let i = 0; i < canvasData.data.length; i += 4){
+        var pixelColor = defaultShader.color(TERRAINMAP.mergedMatrix[yIndex][xIndex]);
+
+        canvasData.data[i + 0] = pixelColor[0];     // Red value
+        canvasData.data[i + 1] = pixelColor[1];     // Green value
+        canvasData.data[i + 2] = pixelColor[2];     // Blue value
+        canvasData.data[i + 3] = 255;               // Alpha value
+
+        xIndex++;
+
+        if(xIndex == TERRAINMAP.width){
+            xIndex = 0;
+            yIndex++;
+        }
+    }
+
+    ctx.putImageData(canvasData, 0, 0);
+}
+
+window.printTerrain = function(){
+    if(show2DPreview){
+        print2D();
+    }
+}
+//------
 
 //---Save/Load system---
 window.saveSettings = function(){
@@ -29,14 +75,13 @@ window.loadSettings = function(){
     TERRAINMAP.layers = JSON.parse(localStorage.getItem("layersData"));
 
     for(let nLayer in TERRAINMAP.layers){
-        TERRAINMAP.fillMatrixes(nLayer);
+        TERRAINMAP.generateNoise(nLayer)
         TERRAINMAP.smooth(nLayer);
 
         UI.addLayerNode(nLayer);
     }
     
-    TERRAINMAP.mergeLayers();
-    TERRAINMAP.printTerrain(PREVIEW2D);
+    printTerrain();
 }
 
 //window.onbeforeunload = saveSettings(TERRAINMAP.layers);
@@ -45,17 +90,18 @@ window.loadSettings = function(){
 //---Functions connecting modules---
 window.newLayer = function(){
     TERRAINMAP.layers.push(new mapLayer);
-    TERRAINMAP.fillMatrixes(TERRAINMAP.layers.length - 1);
+    TERRAINMAP.generateNoise(TERRAINMAP.layers.length - 1)
+    TERRAINMAP.smooth(TERRAINMAP.layers.length - 1)
+
     UI.addLayerNode();
 }
 
 window.deleteLayer = function(node){
     TERRAINMAP.layers.splice($(node).index(), 1);
-    UI.removeLayerNode(node);
-
     currentLayer = UI.layersPanel.length - 1;
-    TERRAINMAP.mergeLayers();
-    TERRAINMAP.printTerrain(PREVIEW2D);
+    printTerrain();
+
+    UI.removeLayerNode(node);
 }
 
 var lastLayerNode = null;
@@ -79,6 +125,37 @@ window.checkChanges = function(){
         UI.saveStatus.text("Changes unsaved");
     }
 }
+//------
+
+//---Controlls---
+var shiftPressed = false;
+
+window.onkeydown = function(event){
+    if(event.key == "Shift"){
+        shiftPressed = true;
+    }
+}
+
+window.onkeyup = function(event){
+    if(event.key == "Shift"){
+        shiftPressed = false;
+    }
+}
+
+UI.preview2D.width(TERRAINMAP.width + "px")
+
+function previewZoom(event){
+    if(shiftPressed){
+        if(event.deltaY < 0){
+            UI.preview2D.width("+=50px");
+        }
+        else{
+            UI.preview2D.width("-=50px");
+        }
+    }
+}
+
+document.onwheel = function(event){previewZoom(event);}
 //------
 
 function initialize(){

@@ -1,4 +1,4 @@
-export class shader{
+export class defaultShader{
     //For now max height is hardcoded to be 255
     //It can be changed to use dynamic value based on user input
     //but it will make same results as increasing heightOffset

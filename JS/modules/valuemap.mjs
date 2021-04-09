@@ -1,10 +1,8 @@
-import {mapLayer} from "./layers.mjs";
-import {shader} from "./shader.mjs";
-
 export class Map{
-    constructor(){
-        this.width = 512;
-        this.height = 512;
+    constructor(width, height, shader){
+        this.width = width;
+        this.height = height;
+        this.shader = shader;
 
         this.layers = [];
 
@@ -79,13 +77,6 @@ export class Map{
     }
     //
 
-    //Generate valueMatrixRaw and valueMatrix, based on layer settings
-    //Used for loading data from localStorage
-    fillMatrixes(nLayer){
-        this.generateNoise(nLayer);
-        this.smooth(nLayer);
-    }
-
     //Merging all layers into 1, for printing.
     //Should be called before printTerrain() to update mergedMatrix
     mergeLayers(){
@@ -144,7 +135,7 @@ export class Map{
                 var yIndex = 0;
                 var xIndex = 0;
                 for(let i = 0; i < canvasData.data.length; i += 4){
-                    var pixelColor = shader.color(this.mergedMatrix[yIndex][xIndex]);
+                    var pixelColor = this.shader.color(this.mergedMatrix[yIndex][xIndex]);
 
                     canvasData.data[i + 0] = pixelColor[0];     // Red value
                     canvasData.data[i + 1] = pixelColor[1];     // Green value
@@ -168,12 +159,13 @@ export class Map{
     
     //Updating layer based on user settings,
     //if canvas is given, printing updated terrain
-    updateLayer(nLayer, property, value, canvas = null){
+    updateLayer(nLayer, property, value){
         var layer = this.layers[nLayer];
 
         switch(property){
             case "seed":
                 layer.seed = value;
+                this.generateNoise(nLayer);
                 break;
 
             case "octavesAmount":
@@ -193,14 +185,8 @@ export class Map{
                 break;
         }
 
-        if(canvas){
-            if(property == 'seed'){
-                this.generateNoise(nLayer);
-            }
-            
-            this.smooth(nLayer);
-            this.mergeLayers();
-            this.printTerrain(canvas);
-        }
+        this.smooth(nLayer);
+            // this.mergeLayers();
+            // this.printTerrain(canvas);
     }
 }

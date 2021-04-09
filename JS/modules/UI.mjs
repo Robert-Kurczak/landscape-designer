@@ -1,5 +1,6 @@
 export class UI{
-    //Input
+    static preview2D = $("#preview_2D");
+
     static octaveSlider = $("#octave_slider");
     static scaleSlider = $("#scale_slider");
     static seedInput = $("#seed_input");
@@ -7,6 +8,7 @@ export class UI{
     static heightOffsetSlider = $("#height_offset_slider");
 
     static saveStatus = $("#save_status");
+
     static layersPanel = $("#layers_panel");
     
     static updateUIValues(layer){
