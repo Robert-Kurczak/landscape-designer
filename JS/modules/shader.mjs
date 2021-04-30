@@ -25,9 +25,8 @@ export class defaultShader{
         [180, 179, 178],
         [242, 242, 242]
     ];
-    
-    //Returns array of 3 color components [red, green, blue]
-    static color(value){
+
+    static colorIndex(value){
         if(value < 0){
             value = 0;
         }
@@ -35,6 +34,11 @@ export class defaultShader{
             value = 255;
         }
 
-        return this.mainGradient[Math.floor((this.mainGradient.length - 1) * (value / 255))];
+        return Math.floor((this.mainGradient.length - 1) * (value / 255));
+    }
+    
+    //Returns array of 3 color components [red, green, blue]
+    static color(value){
+        return this.mainGradient[this.colorIndex(value)];
     }
 }

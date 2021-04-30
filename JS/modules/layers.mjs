@@ -11,6 +11,5 @@ export class mapLayer{
         this.valueMatrixRaw = [];
         //Stores interpolated data from valueMatrixRaw
         this.valueMatrix = [];
-        
     }
 }

@@ -9,6 +9,9 @@ export class Map{
         //For storing resultant data of all layers
         //This variable is updated with mergeLayers method
         this.mergedMatrix = [];
+
+        this.maxValue;
+        this.minValue;
     }
 
     //Fills valueMatrixRaw and valueMatrix with pseudo random values between 0 and 1

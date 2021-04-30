@@ -1,6 +1,23 @@
 export class UI{
-    static preview2D = $("#preview_2D");
+    static previewsHolder = $("#previews");
 
+    //jQuery nodes of preview canvases
+    static previews = {"1D": $("#preview_1D"), "2D": $("#preview_2D"), "3D": $("#preview_3D")};
+    static showPreview = [false, true, false];
+    
+    //HTML of previews nodes.
+    //HTML code is being saved here when preview is being hidden
+    //and read when preview is being shown.
+    //This allow to save such data as canvas dimensions,
+    static previewsHTMLdata = {
+        "1D": "<canvas id=\"preview_1D\"></canvas>",
+        "2D": "<canvas id=\"preview_2D\></canvas>",
+        "3D": "<canvas id=\"preview_3D\"></canvas>"
+    };
+
+    static preview1DSlider = $("#preview_1D_slider");
+
+    //Settings inputs
     static octaveSlider = $("#octave_slider");
     static scaleSlider = $("#scale_slider");
     static seedInput = $("#seed_input");

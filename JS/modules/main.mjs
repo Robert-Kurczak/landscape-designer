@@ -6,13 +6,12 @@ import {defaultShader} from "./shader.mjs";
 window.TERRAINMAP = new Map(512, 512, defaultShader);
 window.currentLayer = 0;
 
-window.show1DPreview = false;
-window.show2DPreview = true;
-window.show3DPreview = false;
+//for test purpouses
+window.UI = UI;
 
 //---Functions for printing generated map to previews---
 window.print2D = function(){
-    var canvas = UI.preview2D[0];
+    var canvas = UI.previews["2D"][0];
 
     var ctx = canvas.getContext("2d");
     var canvasData = ctx.createImageData(TERRAINMAP.width, TERRAINMAP.height);
@@ -21,8 +20,6 @@ window.print2D = function(){
     canvas.height = TERRAINMAP.height;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    TERRAINMAP.mergeLayers();
 
     var yIndex = 0;
     var xIndex = 0;
@@ -45,8 +42,79 @@ window.print2D = function(){
     ctx.putImageData(canvasData, 0, 0);
 }
 
+window.print1D = function(y){
+    var canvas = UI.previews["1D"][0];
+
+    var ctx = canvas.getContext("2d");
+    var canvasData = ctx.createImageData(TERRAINMAP.width, TERRAINMAP.height);
+
+    canvas.width = TERRAINMAP.width;
+    canvas.height = TERRAINMAP.height;
+
+    var mapRow = TERRAINMAP.mergedMatrix[y];
+    
+    var maxRowValue = -Infinity;
+    var minRowValue = Infinity;
+
+    var maxColorIndex = 0;
+    var minColorIndex = 0;
+
+    for(let x = 0; x < TERRAINMAP.width; x++){
+        if(mapRow[x] > maxRowValue){
+            maxRowValue = mapRow[x];
+            maxColorIndex = defaultShader.colorIndex(mapRow[x]);
+        }
+
+        if(mapRow[x] < minRowValue){
+            minRowValue = mapRow[x];
+            minColorIndex = defaultShader.colorIndex(mapRow[x]);
+        }
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    var a = (TERRAINMAP.height - 1) / (minRowValue - maxRowValue);
+    var b = -maxRowValue * a;
+
+    //color interpolation
+    var aColor = (minColorIndex - maxColorIndex) / TERRAINMAP.height;
+    var bColor = maxColorIndex;
+
+    var maxColorTreshold = 0;
+
+    if(maxRowValue > 255){
+        maxColorTreshold = 255 * a + b;
+    }
+
+    for(let x = 0; x < TERRAINMAP.width; x++){
+        var value = Math.floor(a * mapRow[x] + b);
+
+        for(let yIndex = value; yIndex < TERRAINMAP.height; yIndex++){
+            var pixelIndex = (yIndex * TERRAINMAP.width + x) * 4;
+            var color = color = [242, 242, 242];
+
+            if(yIndex >= maxColorTreshold){
+                color = defaultShader.mainGradient[Math.floor(aColor * yIndex + bColor)];
+            }
+
+            canvasData.data[pixelIndex + 0] = color[0];
+            canvasData.data[pixelIndex + 1] = color[1];
+            canvasData.data[pixelIndex + 2] = color[2];
+            canvasData.data[pixelIndex + 3] = 255;
+        }
+    }
+
+    ctx.putImageData(canvasData, 0, 0);
+}
+
 window.printTerrain = function(){
-    if(show2DPreview){
+    TERRAINMAP.mergeLayers();
+
+    if(UI.showPreview[0]){
+        print1D(UI.preview1DSlider.val());
+    }
+
+    if(UI.showPreview[1]){
         print2D();
     }
 }
@@ -68,7 +136,7 @@ window.saveSettings = function(){
 
     localStorage.setItem("layersData", JSON.stringify(dataToStore));
 
-    UI.saveStatus.innerText = "Changes saved";
+    UI.saveStatus.text("Changes saved");
 }
 
 window.loadSettings = function(){
@@ -125,33 +193,71 @@ window.checkChanges = function(){
         UI.saveStatus.text("Changes unsaved");
     }
 }
+
+//might move to UI.mjs
+window.togglePreview = function(n){
+    var index = n - 1;
+    var dimension = n + "D";
+
+    if(UI.showPreview[index]){
+        UI.previewsHTMLdata[dimension] = UI.previewsHolder.children().eq(index).html();
+        UI.previews[dimension].remove();
+
+        UI.showPreview[index] = false;
+    }
+    else{
+        UI.previewsHolder.children().eq(index).append(UI.previewsHTMLdata[dimension]);
+
+        UI.previews[dimension] = $("#preview_" + dimension);
+
+        UI.showPreview[index] = true;
+    }
+
+    if(n == 1){
+        UI.preview1DSlider.toggle();
+    }
+
+    printTerrain();
+}
+
+var previewsSize = {width: TERRAINMAP.width, height: TERRAINMAP.height};
+
+window.updatePreviewsSize = function(){
+    for(let i = 0; i < 3; i++){
+        if(UI.showPreview[i]){
+            UI.previews[(i + 1) + "D"].css({width: previewsSize.width + "px", height: previewsSize.height + "px"});
+        }
+    }
+}
 //------
 
-//---Controlls---
-var shiftPressed = false;
+//---To refactor---
+var keyPressed = false;
 
 window.onkeydown = function(event){
-    if(event.key == "Shift"){
-        shiftPressed = true;
+    if(event.key == "z"){
+        keyPressed = true;
     }
 }
 
 window.onkeyup = function(event){
-    if(event.key == "Shift"){
-        shiftPressed = false;
+    if(event.key == "z"){
+        keyPressed = false;
     }
 }
 
-UI.preview2D.width(TERRAINMAP.width + "px")
-
 function previewZoom(event){
-    if(shiftPressed){
+    if(keyPressed){
         if(event.deltaY < 0){
-            UI.preview2D.width("+=50px");
+            previewsSize.width += 50; //px
+            previewsSize.height += 50; //px
         }
         else{
-            UI.preview2D.width("-=50px");
+            previewsSize.width -= 50; //px
+            previewsSize.height -= 50; //px
         }
+
+        updatePreviewsSize();
     }
 }
 
@@ -163,7 +269,20 @@ function initialize(){
 
     UI.octaveSlider.attr("max", Math.floor(Math.log2(TERRAINMAP.width)) + 1);
 
+    UI.preview1DSlider.attr("max", TERRAINMAP.height - 1);
+    UI.preview1DSlider.hide();
+
     UI.updateUIValues(TERRAINMAP.layers[0]);
+
+    UI.previews["2D"].width(TERRAINMAP.width + "px");
+
+    //Centering div with JQuery so I can omit using transform - which would make draggable
+    UI.previewsHolder.css({
+        "top": (($(window).height() - UI.previewsHolder.outerHeight()) / 2 + $(window).scrollTop() + "px"),
+        "left": (($(window).width() - UI.previewsHolder.outerWidth()) / 2 + $(window).scrollLeft() + "px")
+    });
+    
+    UI.previewsHolder.draggable();
 }
 
 initialize();

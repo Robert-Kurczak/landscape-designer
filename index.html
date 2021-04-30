@@ -4,10 +4,14 @@
         <meta charset="UTF-8">
         <link rel="stylesheet" href="CSS/UI.css">
         <link rel="stylesheet" href="CSS/style.css">
-        <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
         <script src="JS/jquery-3.6.0.min.js"></script>
         <script src="JS/seedrandom.js"></script>
+
+        <!-- To download so project would work online -->
+        <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <!------->
 
         <script type="module" src="JS/modules/shader.mjs"></script>
         <script type="module" src="JS/modules/layers.mjs"></script>
@@ -38,12 +42,18 @@
         </div>
 
         <div id="previews">
-            <canvas id="preview_1D"></canvas>
-            <canvas id="preview_2D"></canvas>
-            <canvas id="preview_3D"></canvas>
+            <div>
+
+            </div>
+            <div>
+                <canvas id="preview_2D"></canvas>
+            </div>
+            <div>
+
+            </div>
         </div>
 
-        <div id="settings" >
+        <div id="settings">
             <p class="section_label">Perlin noise values</p>
             <div class="UI_hr_stripe"></div>
 
@@ -90,7 +100,31 @@
                 type="range" min="-600" max="600" step="0.1"
             >
             <br>
-        </div>
+            <br>
+            <br>
 
+            <div id="previews_displayer">
+                <p class="section_label">Previews</p>
+                <div class="UI_hr_stripe"></div>
+                <label>
+                    Preview 1D
+                    <input id="preview_1D_button" type="checkbox" autocomplete="off" onclick="togglePreview(1)">
+                </label>
+                <input
+                    id="preview_1D_slider"
+                    oninput="print1D(+this.value)"
+                    type="range" min="0" step="1"
+                >
+
+                <label>
+                    Preview 2D
+                    <input id="preview_2D_button" type="checkbox" autocomplete="off" checked onclick="togglePreview(2)">
+                </label>
+                <label>
+                    Preview 3D
+                    <input id="preview_3D_button" type="checkbox" autocomplete="off" onclick="togglePreview(3)">
+                </label>
+            </div>
+        </div>
     </body>
 </html>
