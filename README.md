@@ -17,7 +17,7 @@ I wanted to try myself and implement algorythm on my own rather than using ready
 ## Technologies
  1. JavaScript (ECMAScript® 2021)
     * [seedrandom.js](https://github.com/davidbau/seedrandom) (release 3.0.5)
-    * Three.js
+    * Three.js (r128)
  3. HTML5
  4. CSS
 
