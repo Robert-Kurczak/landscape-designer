@@ -126,7 +126,7 @@
 
 #previews > div{
     display: inline-block;
-    background: red;
+    /* background: red; */
 }
 
 /*---------------Sliders---------------*/

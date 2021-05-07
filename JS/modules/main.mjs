@@ -107,6 +107,97 @@ window.print1D = function(y){
     ctx.putImageData(canvasData, 0, 0);
 }
 
+var terrainGeometry;
+var geometryMaterial;
+var terrainPlane;
+
+//TO change nesting scene node
+window.print3D = function(){
+    function shapeObject(){
+        var terrainVerticles = terrainGeometry.attributes.position.array;
+
+        var yIndex = 0;
+        var xIndex = 0;
+
+        for(let i = 0; i < terrainVerticles.length; i += 3){
+            terrainVerticles[i + 2] = TERRAINMAP.mergedMatrix[yIndex][xIndex];
+
+            xIndex++;
+
+            if(xIndex == TERRAINMAP.width){
+                xIndex = 0;
+                yIndex++;
+            }
+        }
+        geometryMaterial.map = new THREE.CanvasTexture(UI.previews["2D"][0]);
+        
+        terrainGeometry.attributes.position.needsUpdate = true;
+    }
+
+    //If canvas for drawing scene doesn't exist
+    if(UI.previews["3D"].children().length == 0){
+        //---Setting 3D scene---
+        const preview3DScene = new THREE.Scene();
+        const preview3DCamera = new THREE.PerspectiveCamera(75, TERRAINMAP.width / TERRAINMAP.height, 0.1, 1000);
+
+        const preview3DRenderer = new THREE.WebGLRenderer();
+        preview3DRenderer.setSize(TERRAINMAP.width, TERRAINMAP.height);
+
+        UI.previews["3D"][0].appendChild(preview3DRenderer.domElement);
+
+        //Proper width and height for new scene node
+        UI.previews["3D"].children().css({width: UI.previewsSize.width, height: UI.previewsSize.height});
+        //------
+
+        //---Setting 3D object---
+        terrainGeometry = new THREE.PlaneBufferGeometry(TERRAINMAP.width, TERRAINMAP.height, TERRAINMAP.width - 1, TERRAINMAP.height - 1);
+        geometryMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            shininess: 0,
+            side: THREE.DoubleSide
+        });
+        terrainPlane = new THREE.Mesh(terrainGeometry, geometryMaterial);
+        //------
+
+        //---Shaping object---
+        shapeObject();
+        terrainGeometry.attributes.position.needsUpdate = true;
+        //------
+
+        // const geometry = new THREE.BoxGeometry();
+        // const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+        // const cube = new THREE.Mesh( geometry, material );
+        // preview3DScene.add( cube );
+
+        // preview3DCamera.position.z = 5;
+
+        //---Setting scene light---
+        const preview3DLight = new THREE.PointLight(0xffffff, 2, 0, 0);
+        preview3DLight.position.set(TERRAINMAP.width / 2, TERRAINMAP.height / 2, 200);
+        //------
+
+        preview3DScene.add(preview3DLight);
+        preview3DScene.add(terrainPlane);
+
+        preview3DCamera.position.z = TERRAINMAP.height + 100;
+
+        function animate(){
+            requestAnimationFrame(animate);
+        
+            preview3DRenderer.render(preview3DScene, preview3DCamera);
+        }
+
+        const controls = new THREE.OrbitControls(preview3DCamera, preview3DRenderer.domElement);
+        controls.movementSpeed = 10;
+        controls.lookSpeed = 0.000001;
+        
+        animate();
+    }
+    else{
+        shapeObject();
+    }
+}
+
 window.printTerrain = function(){
     TERRAINMAP.mergeLayers();
 
@@ -117,6 +208,14 @@ window.printTerrain = function(){
     if(UI.showPreview[1]){
         print2D();
     }
+
+    if(UI.showPreview[2]){
+        print3D();
+    }
+
+    //To refractor
+    //All previews are being updated
+    //when preview is toggle
 }
 //------
 
@@ -165,11 +264,13 @@ window.newLayer = function(){
 }
 
 window.deleteLayer = function(node){
-    TERRAINMAP.layers.splice($(node).index(), 1);
-    currentLayer = UI.layersPanel.length - 1;
-    printTerrain();
+    if(confirm("Do you want to remove this layer?")){
+        TERRAINMAP.layers.splice($(node).index(), 1);
+        currentLayer = UI.layersPanel.length - 1;
+        printTerrain();
 
-    UI.removeLayerNode(node);
+        UI.removeLayerNode(node);
+    }
 }
 
 var lastLayerNode = null;
@@ -200,15 +301,16 @@ window.togglePreview = function(n){
     var dimension = n + "D";
 
     if(UI.showPreview[index]){
-        UI.previewsHTMLdata[dimension] = UI.previewsHolder.children().eq(index).html();
+        //UI.previewsHTMLdata[dimension] = UI.previewsHolder.children().eq(index).html();
         UI.previews[dimension].remove();
 
         UI.showPreview[index] = false;
     }
     else{
-        UI.previewsHolder.children().eq(index).append(UI.previewsHTMLdata[dimension]);
+        UI.previewsHolder.children().eq(index).append(UI.previewsHTML[dimension]);
 
         UI.previews[dimension] = $("#preview_" + dimension);
+        UI.previews[dimension].css({width: UI.previewsSize.width, height: UI.previewsSize.height});
 
         UI.showPreview[index] = true;
     }
@@ -220,12 +322,15 @@ window.togglePreview = function(n){
     printTerrain();
 }
 
-var previewsSize = {width: TERRAINMAP.width, height: TERRAINMAP.height};
-
 window.updatePreviewsSize = function(){
     for(let i = 0; i < 3; i++){
         if(UI.showPreview[i]){
-            UI.previews[(i + 1) + "D"].css({width: previewsSize.width + "px", height: previewsSize.height + "px"});
+            UI.previews[(i + 1) + "D"].css({width: UI.previewsSize.width + "px", height: UI.previewsSize.height + "px"});
+
+            //Changing scene size for preview 3D
+            if(i == 2){
+                UI.previews[(i + 1) + "D"].children().css({width: UI.previewsSize.width + "px", height: UI.previewsSize.height + "px"});
+            }
         }
     }
 }
@@ -249,12 +354,12 @@ window.onkeyup = function(event){
 function previewZoom(event){
     if(keyPressed){
         if(event.deltaY < 0){
-            previewsSize.width += 50; //px
-            previewsSize.height += 50; //px
+            UI.previewsSize.width += 50; //px
+            UI.previewsSize.height += 50; //px
         }
         else{
-            previewsSize.width -= 50; //px
-            previewsSize.height -= 50; //px
+            UI.previewsSize.width -= 50; //px
+            UI.previewsSize.height -= 50; //px
         }
 
         updatePreviewsSize();
@@ -268,6 +373,9 @@ function initialize(){
     localStorage.getItem("layersData") === null ? window.saveSettings(TERRAINMAP.layers) : window.loadSettings();
 
     UI.octaveSlider.attr("max", Math.floor(Math.log2(TERRAINMAP.width)) + 1);
+
+    UI.previewsSize.width = TERRAINMAP.width;
+    UI.previewsSize.height = TERRAINMAP.height;
 
     UI.preview1DSlider.attr("max", TERRAINMAP.height - 1);
     UI.preview1DSlider.hide();

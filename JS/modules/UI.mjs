@@ -5,15 +5,15 @@ export class UI{
     static previews = {"1D": $("#preview_1D"), "2D": $("#preview_2D"), "3D": $("#preview_3D")};
     static showPreview = [false, true, false];
     
-    //HTML of previews nodes.
-    //HTML code is being saved here when preview is being hidden
-    //and read when preview is being shown.
-    //This allow to save such data as canvas dimensions,
-    static previewsHTMLdata = {
+    //Default previews htmls
+    static previewsHTML = {
         "1D": "<canvas id=\"preview_1D\"></canvas>",
-        "2D": "<canvas id=\"preview_2D\></canvas>",
-        "3D": "<canvas id=\"preview_3D\"></canvas>"
+        "2D": "<canvas id=\"preview_2D\"></canvas>",
+        "3D": "<div id=\"preview_3D\"></div>"
     };
+
+    //Should be initialized
+    static previewsSize = {width: 512, height: 512};
 
     static preview1DSlider = $("#preview_1D_slider");
 
@@ -61,8 +61,6 @@ export class UI{
     }
 
     static removeLayerNode(node){
-        if(confirm("Do you want to remove this layer?")){
-            node.remove();
-        }
+        node.remove();
     }
 }
