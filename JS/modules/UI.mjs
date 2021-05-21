@@ -17,6 +17,8 @@ export class UI{
 
     static preview1DSlider = $("#preview_1D_slider");
 
+    static settingsPanel = $("#settings");
+
     //Settings inputs
     static octaveSlider = $("#octave_slider");
     static scaleSlider = $("#scale_slider");
@@ -27,6 +29,9 @@ export class UI{
     static saveStatus = $("#save_status");
 
     static layersPanel = $("#layers_panel");
+
+    static activeColor = "#141414";
+    static inactiveColor = "#212121";
     
     static updateUIValues(layer){
         UI.octaveSlider.val(layer.octavesAmount);
@@ -55,7 +60,7 @@ export class UI{
             </div>
         `;
 
-        this.layersPanel.children().last().before(layerHTML);
+        UI.layersPanel.children().last().before(layerHTML);
 
         UI.layerCounter++;
     }

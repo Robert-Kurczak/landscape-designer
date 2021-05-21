@@ -85,6 +85,7 @@ export class Map{
     mergeLayers(){
         this.mergedMatrix = [];
 
+        //Filling matrix with zeros
         for(let y = 0; y < this.height; y++){
             var row = [];
 
@@ -94,6 +95,7 @@ export class Map{
 
             this.mergedMatrix.push(row);
         }
+        //
 
         for(var layer of this.layers){
             for(let y = 0; y < this.height; y++){

@@ -4,44 +4,11 @@ import {mapLayer} from "./layers.mjs";
 import {defaultShader} from "./shader.mjs";
 
 window.TERRAINMAP = new Map(512, 512, defaultShader);
-window.currentLayer = 0;
 
 //for test purpouses
 window.UI = UI;
 
 //---Functions for printing generated map to previews---
-window.print2D = function(){
-    var canvas = UI.previews["2D"][0];
-
-    var ctx = canvas.getContext("2d");
-    var canvasData = ctx.createImageData(TERRAINMAP.width, TERRAINMAP.height);
-
-    canvas.width = TERRAINMAP.width;
-    canvas.height = TERRAINMAP.height;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    var yIndex = 0;
-    var xIndex = 0;
-    for(let i = 0; i < canvasData.data.length; i += 4){
-        var pixelColor = defaultShader.color(TERRAINMAP.mergedMatrix[yIndex][xIndex]);
-
-        canvasData.data[i + 0] = pixelColor[0];     // Red value
-        canvasData.data[i + 1] = pixelColor[1];     // Green value
-        canvasData.data[i + 2] = pixelColor[2];     // Blue value
-        canvasData.data[i + 3] = 255;               // Alpha value
-
-        xIndex++;
-
-        if(xIndex == TERRAINMAP.width){
-            xIndex = 0;
-            yIndex++;
-        }
-    }
-
-    ctx.putImageData(canvasData, 0, 0);
-}
-
 window.print1D = function(y){
     var canvas = UI.previews["1D"][0];
 
@@ -101,6 +68,38 @@ window.print1D = function(y){
             canvasData.data[pixelIndex + 1] = color[1];
             canvasData.data[pixelIndex + 2] = color[2];
             canvasData.data[pixelIndex + 3] = 255;
+        }
+    }
+
+    ctx.putImageData(canvasData, 0, 0);
+}
+
+window.print2D = function(){
+    var canvas = UI.previews["2D"][0];
+
+    var ctx = canvas.getContext("2d");
+    var canvasData = ctx.createImageData(TERRAINMAP.width, TERRAINMAP.height);
+
+    canvas.width = TERRAINMAP.width;
+    canvas.height = TERRAINMAP.height;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    var yIndex = 0;
+    var xIndex = 0;
+    for(let i = 0; i < canvasData.data.length; i += 4){
+        var pixelColor = defaultShader.color(TERRAINMAP.mergedMatrix[yIndex][xIndex]);
+
+        canvasData.data[i + 0] = pixelColor[0];     // Red value
+        canvasData.data[i + 1] = pixelColor[1];     // Green value
+        canvasData.data[i + 2] = pixelColor[2];     // Blue value
+        canvasData.data[i + 3] = 255;               // Alpha value
+
+        xIndex++;
+
+        if(xIndex == TERRAINMAP.width){
+            xIndex = 0;
+            yIndex++;
         }
     }
 
@@ -247,20 +246,42 @@ window.loadSettings = function(){
 
         UI.addLayerNode(nLayer);
     }
-    
-    printTerrain();
 }
 
 //window.onbeforeunload = saveSettings(TERRAINMAP.layers);
 //------
 
 //---Functions connecting modules---
+window.currentLayer = 0;
+var lastLayerNode = null;
+
+window.changeLayer = function(node){
+    if(lastLayerNode != null){
+        lastLayerNode.css("background-color", UI.inactiveColor);
+    }
+
+    $(node).css("background-color", UI.activeColor);
+    lastLayerNode = $(node);
+    
+    var nLayer = $(node).parent().index();
+
+    window.currentLayer = nLayer;
+    UI.updateUIValues(TERRAINMAP.layers[nLayer]);
+}
+
 window.newLayer = function(){
     TERRAINMAP.layers.push(new mapLayer);
     TERRAINMAP.generateNoise(TERRAINMAP.layers.length - 1)
     TERRAINMAP.smooth(TERRAINMAP.layers.length - 1)
 
     UI.addLayerNode();
+
+    //First layer case
+    if(UI.layersPanel.children().length == 2){
+        UI.settingsPanel.show();
+
+        changeLayer($(".layer_selector").first());
+    }
 }
 
 window.deleteLayer = function(node){
@@ -271,22 +292,6 @@ window.deleteLayer = function(node){
 
         UI.removeLayerNode(node);
     }
-}
-
-var lastLayerNode = null;
-
-window.changeLayer = function(node){
-    if(lastLayerNode != null){
-        lastLayerNode.css("background-color", "#212121");
-    }
-
-    $(node).css("background-color", "#141414");
-    lastLayerNode = $(node);
-    
-    var nLayer = $(node).parent().index();
-
-    window.currentLayer = nLayer;
-    UI.updateUIValues(TERRAINMAP.layers[nLayer]);
 }
 
 window.checkChanges = function(){
@@ -370,8 +375,18 @@ document.onwheel = function(event){previewZoom(event);}
 //------
 
 function initialize(){
-    localStorage.getItem("layersData") === null ? window.saveSettings(TERRAINMAP.layers) : window.loadSettings();
+    if(localStorage.getItem("layersData") != null){
+        window.loadSettings();
+        UI.updateUIValues(TERRAINMAP.layers[0]);
+        window.changeLayer($(".layer_selector").first());
+    }
+    else{
+        UI.settingsPanel.hide();
+    }
 
+    window.printTerrain();
+
+    //Setting UI
     UI.octaveSlider.attr("max", Math.floor(Math.log2(TERRAINMAP.width)) + 1);
 
     UI.previewsSize.width = TERRAINMAP.width;
@@ -380,15 +395,16 @@ function initialize(){
     UI.preview1DSlider.attr("max", TERRAINMAP.height - 1);
     UI.preview1DSlider.hide();
 
-    UI.updateUIValues(TERRAINMAP.layers[0]);
-
+    //????????
     UI.previews["2D"].width(TERRAINMAP.width + "px");
+    //
 
-    //Centering div with JQuery so I can omit using transform - which would make draggable
+    //Centering div with JQuery so I can omit using transform - which would make draggable behave strangly
     UI.previewsHolder.css({
         "top": (($(window).height() - UI.previewsHolder.outerHeight()) / 2 + $(window).scrollTop() + "px"),
         "left": (($(window).width() - UI.previewsHolder.outerWidth()) / 2 + $(window).scrollLeft() + "px")
     });
+    //
     
     UI.previewsHolder.draggable();
 }
