@@ -18,6 +18,8 @@ I wanted to try myself and implement algorythm on my own rather than using ready
  1. JavaScript (ECMAScript® 2021)
     * [seedrandom.js](https://github.com/davidbau/seedrandom) (release 3.0.5)
     * Three.js (r128)
+    * JQuery 3.6.0
+    * JQuery UI 1.12.1
  3. HTML5
  4. CSS
 
