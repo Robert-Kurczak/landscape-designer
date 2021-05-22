@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+    <html lang="pl">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="CSS/UI.css">
+        <link rel="stylesheet" href="CSS/style.css">
+
+        <script src="JS/jquery-3.6.0.min.js"></script>
+        <script src="JS/seedrandom.js"></script>
+        <script src="JS/three.min.js"></script>
+        <script src="JS/OrbitControls.js"></script>
+
+        <!-- To download so project would work offline -->
+        <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <!------->
+
+        <script type="module" src="JS/modules/shader.mjs"></script>
+        <script type="module" src="JS/modules/layers.mjs"></script>
+        <script type="module" src="JS/modules/valuemap.mjs"></script>
+        <script type="module" src="JS/modules/UI.mjs"></script>
+        <script type="module" src="JS/modules/main.mjs"></script>
+
+        <title>Generator</title>
+    </head>
+
+    <body>
+        <div id="upper_panel">
+            <p id="save_status">Changes saved</p>
+            <div class="save_button" onclick="saveSettings();"><p>Save</p></div>
+        </div>
+
+        <div id="layers_panel">
+            <!-- <div class="layer_node">
+                <div class="layer_selector" onclick="changeLayer(0)">
+                    <span class="layer_marker"></span><p class="layer_name">Main layer</p>
+                </div
+                ><div class="remove_layer_button">
+                    <p>x</p>
+                </div>
+            </div> -->
+
+            <div class="add_layer_button" onclick="newLayer(); checkChanges();"><p>Add new layer</p></div>
+        </div>
+
+        <div id="previews">
+            <div>
+
+            </div>
+            <div>
+                <canvas id="preview_2D"></canvas>
+            </div>
+            <div>
+                <!-- <div id="preview_3D"></div> -->
+            </div>
+        </div>
+
+        <div id="settings">
+            <p class="section_label">Perlin noise values</p>
+            <div class="UI_hr_stripe"></div>
+
+            <p>Octaves:</p>
+            <input
+                id="octave_slider"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'octavesAmount', +this.value); printTerrain(); checkChanges();"
+                type="range" min="0"
+            >
+            <br>
+
+            <p>Scale:</p>
+            <input
+                id="scale_slider"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'scaleDivider', +this.value); printTerrain(); checkChanges();"
+                type="range" min="0.0001" max="10" step="0.1"
+            >
+            <br>
+
+            <label>
+                Seed:
+                <input
+                    id="seed_input"
+                    onchange="TERRAINMAP.updateLayer(currentLayer, 'seed', this.value); printTerrain(); checkChanges();"
+                    type="text"
+                >
+            </label>
+
+            <p class="section_label">Display values</p>
+            <div class="UI_hr_stripe"></div>
+
+            <p>Height factor:</p>
+            <input
+                id="height_factor_slider"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'heightFactor', +this.value); printTerrain(); checkChanges();"
+                type="range" min="0" max="2000" step="0.1"
+            >
+            <br>
+
+            <p class="UI_slider_label">Height offset:</p>
+            <input
+                id="height_offset_slider"
+                oninput="TERRAINMAP.updateLayer(currentLayer, 'heightOffset', +this.value); printTerrain(); checkChanges();"
+                type="range" min="-600" max="600" step="0.1"
+            >
+            <br>
+            <br>
+
+            <div id="previews_displayer">
+                <p class="section_label">Previews</p>
+                <div class="UI_hr_stripe"></div>
+                <label>
+                    Preview 1D
+                    <input id="preview_1D_button" type="checkbox" autocomplete="off" onclick="togglePreview(1)">
+                </label>
+                <input
+                    id="preview_1D_slider"
+                    oninput="print1D(+this.value)"
+                    type="range" min="0" step="1"
+                >
+
+                <label>
+                    Preview 2D
+                    <input id="preview_2D_button" type="checkbox" autocomplete="off" checked onclick="togglePreview(2)">
+                </label>
+                <label>
+                    Preview 3D
+                    <input id="preview_3D_button" type="checkbox" autocomplete="off" onclick="togglePreview(3)">
+                </label>
+            </div>
+        </div>
+    </body>
+</html>
