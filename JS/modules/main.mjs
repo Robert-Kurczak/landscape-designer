@@ -74,9 +74,7 @@ window.print1D = function(y){
     ctx.putImageData(canvasData, 0, 0);
 }
 
-window.print2D = function(){
-    var canvas = UI.previews["2D"][0];
-
+window.print2D = function(canvas = UI.previews["2D"][0]){
     var ctx = canvas.getContext("2d");
     var canvasData = ctx.createImageData(TERRAINMAP.width, TERRAINMAP.height);
 
@@ -107,62 +105,68 @@ window.print2D = function(){
     ctx.putImageData(canvasData, 0, 0);
 }
 
+
+function shapeObject(geometry){
+    var verticles = geometry.attributes.position.array;
+
+    var yIndex = 0;
+    var xIndex = 0;
+
+    for(let i = 0; i < verticles.length; i += 3){
+        verticles[i + 2] = TERRAINMAP.mergedMatrix[yIndex][xIndex];
+
+        xIndex++;
+
+        if(xIndex == TERRAINMAP.width){
+            xIndex = 0;
+            yIndex++;
+        }
+    }
+
+    geometry.attributes.position.needsUpdate = true;
+
+    return geometry;
+}
+
+function textureObject(geometryMaterial){
+    //Getting texture from existing canvas for 2D preview if it's shown
+    if(UI.showPreview[1]){
+        geometryMaterial.map = new THREE.CanvasTexture(UI.previews["2D"][0]);
+    }
+    //Generating texture from raw data if 2D preview is hidden
+    else{
+        var colorMap = [];
+
+        for(let y = 0; y < TERRAINMAP.height; y++){
+            for(let x = 0; x < TERRAINMAP.width; x++){
+                var color = defaultShader.color(TERRAINMAP.mergedMatrix[y][x]);
+                colorMap.push(color[0], color[1], color[2], 255);
+            }
+        }
+
+        const dataTexture = new THREE.DataTexture(
+            Uint8Array.from(colorMap),
+            TERRAINMAP.width,
+            TERRAINMAP.height,
+            THREE.RGBAFormat,
+            THREE.UnsignedByteType,
+            THREE.UVMapping
+        );
+
+        dataTexture.flipY = true;
+        
+        dataTexture.needsUpdate = true;
+
+        geometryMaterial.map = dataTexture;
+    }
+
+    return geometryMaterial;
+}
+
 var terrainGeometry;
 var geometryMaterial;
 var terrainPlane;
-
 window.print3D = function(){
-    function shapeObject(){
-        var terrainVerticles = terrainGeometry.attributes.position.array;
-
-        var yIndex = 0;
-        var xIndex = 0;
-
-        for(let i = 0; i < terrainVerticles.length; i += 3){
-            terrainVerticles[i + 2] = TERRAINMAP.mergedMatrix[yIndex][xIndex];
-
-            xIndex++;
-
-            if(xIndex == TERRAINMAP.width){
-                xIndex = 0;
-                yIndex++;
-            }
-        }
-
-        //Getting texture from existing canvas for 2D preview if it's shown
-        if(UI.showPreview[1]){
-            geometryMaterial.map = new THREE.CanvasTexture(UI.previews["2D"][0]);
-        }
-        //Generating texture from raw data if 2D preview is hidden
-        else{
-            var colorMap = [];
-
-            for(let y = 0; y < TERRAINMAP.height; y++){
-                for(let x = 0; x < TERRAINMAP.width; x++){
-                    var color = defaultShader.color(TERRAINMAP.mergedMatrix[y][x]);
-                    colorMap.push(color[0], color[1], color[2], 255);
-                }
-            }
-
-            const dataTexture = new THREE.DataTexture(
-                Uint8Array.from(colorMap),
-                TERRAINMAP.width,
-                TERRAINMAP.height,
-                THREE.RGBAFormat,
-                THREE.UnsignedByteType,
-                THREE.UVMapping
-            );
-
-            dataTexture.flipY = true;
-            
-            dataTexture.needsUpdate = true;
-
-            geometryMaterial.map = dataTexture;
-        }
-        
-        terrainGeometry.attributes.position.needsUpdate = true;
-    }
-
     //If canvas for drawing scene doesn't exist
     if(UI.previews["3D"].children().length == 0){
         //---Setting 3D scene---
@@ -189,8 +193,9 @@ window.print3D = function(){
         //------
 
         //---Shaping object---
-        shapeObject();
-        terrainGeometry.attributes.position.needsUpdate = true;
+        terrainGeometry = shapeObject(terrainGeometry);
+        geometryMaterial = textureObject(geometryMaterial);
+        //terrainGeometry.attributes.position.needsUpdate = true;
         //------
 
         //---Setting scene light---
@@ -216,7 +221,8 @@ window.print3D = function(){
         animate();
     }
     else{
-        shapeObject();
+        terrainGeometry = shapeObject(terrainGeometry);
+        geometryMaterial = textureObject(geometryMaterial);
     }
 }
 
@@ -242,8 +248,8 @@ window.printTerrain = function(){
 //------
 
 //---Save/Load system---
-window.saveSettings = function(){
-    var dataToStore = [];
+function JSONfromLayers(){
+    var JSONcontent = [];
 
     //Removing matrixes (too large to store)
     for(var layer of TERRAINMAP.layers){
@@ -252,15 +258,20 @@ window.saveSettings = function(){
         layerCopy.valueMatrixRaw = [];
         layerCopy.valueMatrix = [];
 
-        dataToStore.push(layerCopy);
+        JSONcontent.push(layerCopy);
     }
+    //
 
-    localStorage.setItem("layersData", JSON.stringify(dataToStore));
+    return JSONcontent;
+}
+
+window.saveToBrowser = function(){
+    localStorage.setItem("layersData", JSON.stringify(JSONfromLayers()));
 
     UI.saveStatus.text("Changes saved");
 }
 
-window.loadSettings = function(){
+window.loadFromBrowser = function(){
     TERRAINMAP.layers = JSON.parse(localStorage.getItem("layersData"));
 
     for(let nLayer in TERRAINMAP.layers){
@@ -271,6 +282,56 @@ window.loadSettings = function(){
     }
 }
 
+window.loadFromJSON = function(){
+    
+}
+
+window.saveToJSON = function(){
+    var a = document.createElement("a");
+    var file = new Blob([JSONfromLayers()], {type: "json"});
+    
+    a.href = URL.createObjectURL(file);
+    a.download = "TerrainJSON.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+window.saveImage = function(){
+    var canvas = document.createElement("canvas");
+    print2D(canvas);
+
+    var a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = "TerrainPNG";
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+window.saveOBJ = function(){
+    //---Setting 3D object---
+    var terrainGeometry = new THREE.PlaneBufferGeometry(TERRAINMAP.width, TERRAINMAP.height, TERRAINMAP.width - 1, TERRAINMAP.height - 1);
+    var geometryMaterial = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        shininess: 0,
+        side: THREE.DoubleSide
+    });
+    //------
+
+    terrainGeometry = shapeObject(terrainGeometry);
+    //geometryMaterial = textureObject(geometryMaterial);
+
+    var terrainPlane = new THREE.Mesh(terrainGeometry, geometryMaterial);
+
+    var exporter = new THREE.OBJExporter();
+
+    var a = document.createElement("a");
+    var file = new Blob([exporter.parse(terrainPlane)], {type: "obj"});
+
+    a.href = URL.createObjectURL(file);
+    a.download = "TerrainOBJ.obj";
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
 //window.onbeforeunload = saveSettings(TERRAINMAP.layers);
 //------
 
@@ -364,7 +425,9 @@ window.updatePreviewsSize = function(){
 }
 //------
 
-//---To refactor---
+//------Listeners------
+
+//---Zooming---
 var keyPressed = false;
 
 window.onkeydown = function(event){
@@ -395,9 +458,25 @@ function previewZoom(event){
 }
 
 document.onwheel = function(event){previewZoom(event);}
+//---
+
+//---Hidding menus---
+$(document).click(function(event){
+    const target = $(event.target);
+
+    window.target = target;
+
+    if(!((target.hasClass("menu")) || (target.hasClass("menu_item")))){
+        UI.hideAllMenus();
+    }
+});
 //------
 
 function initialize(){
+    UI.fileMenu.hide();
+    UI.saveMenu.hide();
+    UI.loadMenu.hide();
+
     if(localStorage.getItem("layersData") != null){
         window.loadSettings();
         UI.updateUIValues(TERRAINMAP.layers[0]);
@@ -418,7 +497,6 @@ function initialize(){
     UI.preview1DSlider.attr("max", TERRAINMAP.height - 1);
     UI.preview1DSlider.hide();
 
-    //????????
     UI.previews["2D"].width(TERRAINMAP.width + "px");
     //
 
