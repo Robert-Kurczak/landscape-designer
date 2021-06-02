@@ -262,17 +262,13 @@ function JSONfromLayers(){
     }
     //
 
-    return JSONcontent;
+    return JSON.stringify(JSONcontent);
 }
 
-window.saveToBrowser = function(){
-    localStorage.setItem("layersData", JSON.stringify(JSONfromLayers()));
+function layersFromJSON(JSONstring){
+    UI.clearLayersNodes();
 
-    UI.saveStatus.text("Changes saved");
-}
-
-window.loadFromBrowser = function(){
-    TERRAINMAP.layers = JSON.parse(localStorage.getItem("layersData"));
+    TERRAINMAP.layers = JSON.parse(JSONstring);
 
     for(let nLayer in TERRAINMAP.layers){
         TERRAINMAP.generateNoise(nLayer)
@@ -280,15 +276,41 @@ window.loadFromBrowser = function(){
 
         UI.addLayerNode(nLayer);
     }
+
+    printTerrain();
+}
+
+window.saveToBrowser = function(){
+    localStorage.setItem("layersData", JSONfromLayers());
+
+    UI.saveStatus.text("Changes saved");
+}
+
+window.loadFromBrowser = function(){
+    layersFromJSON(localStorage.getItem("layersData"));
 }
 
 window.loadFromJSON = function(){
-    
+    var uploader = document.createElement("input");
+    uploader.setAttribute("type", "file");
+    uploader.setAttribute("accept", ".json");
+
+    uploader.onchange = function(){
+        var reader = new FileReader();
+
+        reader.onload = function(file){
+            layersFromJSON(file.target.result);
+        };
+
+        reader.readAsText(uploader.files[0]);
+    };
+
+    uploader.click();
 }
 
 window.saveToJSON = function(){
     var a = document.createElement("a");
-    var file = new Blob([JSONfromLayers()], {type: "json"});
+    var file = new Blob([JSONfromLayers()], {type: "application/json"});
     
     a.href = URL.createObjectURL(file);
     a.download = "TerrainJSON.json";
@@ -478,9 +500,12 @@ function initialize(){
     UI.loadMenu.hide();
 
     if(localStorage.getItem("layersData") != null){
-        window.loadSettings();
-        UI.updateUIValues(TERRAINMAP.layers[0]);
-        window.changeLayer($(".layer_selector").first());
+        window.loadFromBrowser();
+
+        if(TERRAINMAP.layers.length > 0){
+            window.changeLayer($(".layer_selector").first());
+        }
+
     }
     else{
         UI.settingsPanel.hide();

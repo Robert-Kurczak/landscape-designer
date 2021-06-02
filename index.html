@@ -10,11 +10,7 @@
         <script src="JS/three.min.js"></script>
         <script src="JS/OrbitControls.js"></script>
         <script src="JS/OBJExporter.js"></script>
-
-        <!-- To download so project would work offline -->
-        <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-        <!------->
+        <script src="JS/jquery-ui.min.js"></script>
 
         <script type="module" src="JS/modules/shader.mjs"></script>
         <script type="module" src="JS/modules/layers.mjs"></script>
@@ -48,10 +44,9 @@
         </div>
 
         <div class="menu" id="load_menu">
-            <button class="menu_item">Load from browser</button>
-            <input type="file">
+            <button class="menu_item" onclick="loadFromBrowser();">Load from browser</button>
             <div class="UI_hr_stripe menu_item"></div>
-            <button class="menu_item">Load from JSON</button>
+            <button class="menu_item" onclick="loadFromJSON();">Load from JSON</button>
         </div>
 
         <div id="layers_panel">

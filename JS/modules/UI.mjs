@@ -82,6 +82,12 @@ export class UI{
         node.remove();
     }
 
+    static clearLayersNodes(){
+        while(UI.layersPanel.children().length > 1){
+            UI.layersPanel.children().first().remove();
+        }
+    }
+
     static toggleFileMenu(){
         UI.fileMenu.slideToggle(UI.menuSlideTime);
 
