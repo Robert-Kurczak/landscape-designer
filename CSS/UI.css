@@ -177,7 +177,8 @@
     margin: 12px 0 18px 0;
 }
 
-#settings input[type = "range"]::-moz-range-thumb, #settings input[type = "range"]::-webkit-slider-thumb{
+#settings input[type = "range"]::-moz-range-thumb{
+    appearance: none;
     width: 12px;
     height: 12px;
     background-color: #3D5AFE;
@@ -188,7 +189,23 @@
     transition-duration: 0.2s;
 }
 
-#settings input[type = "range"]:hover::-moz-range-thumb, #settings input[type = "range"]:hover::-webkit-slider-thumb{
+#settings input[type = "range"]::-webkit-slider-thumb{
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background-color: #3D5AFE;
+    outline: none;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    transition-duration: 0.2s;
+}
+
+#settings input[type = "range"]:hover::-moz-range-thumb{
+    background-color: #00AEEF;
+}
+
+#settings input[type = "range"]:hover::-webkit-slider-thumb{
     background-color: #00AEEF;
 }
 
