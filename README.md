@@ -16,15 +16,21 @@ I wanted to try myself and implement algorythm on my own rather than using ready
 
 ## Technologies
  1. JavaScript (ECMAScript® 2021)
-    * [seedrandom.js](https://github.com/davidbau/seedrandom) (release 3.0.5)
-    * Three.js (r128)
+    * [seedrandom.js](https://github.com/davidbau/seedrandom) 3.0.5
+    * Three.js r128
     * JQuery 3.6.0
     * JQuery UI 1.12.1
- 3. HTML5
- 4. CSS
+ 2. Electron 13.0.1
+ 3. electron-packager 15.2.0
+ 4. electron-wix-msi 3.2.0
+ 5. HTML5
+ 6. CSS
 
 ## Setup
-Just download all files and run index.html
+  ### Option 1
+   Download built electron app from "ElectronApp-builds" folder (either zipped folder or msi installer) and run executable file.
+  ### Option 2
+   Download WebPage folder, host it on your local server and run it in browser.
 
 ## Sources
 1. [OneLoneCoder / javidx9](https://github.com/OneLoneCoder)'s video ["Programming Perlin-like Noise (C++)"](https://www.youtube.com/watch?v=6-0UaeJBumA)
