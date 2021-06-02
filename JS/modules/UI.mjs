@@ -1,4 +1,5 @@
 export class UI{
+    //------Previews------
     static previewsHolder = $("#previews");
 
     //jQuery nodes of preview canvases
@@ -16,7 +17,20 @@ export class UI{
     static previewsSize = {width: 512, height: 512};
 
     static preview1DSlider = $("#preview_1D_slider");
+    //------------
 
+    //------Upper panel------
+    // static fileMenuButton = $("#file_menu_button");
+    static menuSlideTime = 150;
+
+    static fileMenu = $("#file_menu");
+    static saveMenu = $("#save_menu");
+    static loadMenu = $("#load_menu");
+
+    static saveStatus = $("#save_status");
+    //------------
+
+    //------Settings------
     static settingsPanel = $("#settings");
 
     //Settings inputs
@@ -25,13 +39,12 @@ export class UI{
     static seedInput = $("#seed_input");
     static heightFactorSlider = $("#height_factor_slider");
     static heightOffsetSlider = $("#height_offset_slider");
-
-    static saveStatus = $("#save_status");
+    //------------
 
     static layersPanel = $("#layers_panel");
 
-    static activeColor = "#141414";
-    static inactiveColor = "#212121";
+    static activeColor = "rgb(20, 20, 20)";     //#141414
+    static inactiveColor = "rgb(33, 33, 33)";   //#212121
     
     static updateUIValues(layer){
         UI.octaveSlider.val(layer.octavesAmount);
@@ -67,5 +80,53 @@ export class UI{
 
     static removeLayerNode(node){
         node.remove();
+    }
+
+    static clearLayersNodes(){
+        while(UI.layersPanel.children().length > 1){
+            UI.layersPanel.children().first().remove();
+        }
+    }
+
+    static toggleFileMenu(){
+        UI.fileMenu.slideToggle(UI.menuSlideTime);
+
+        if(UI.loadMenu.is(":visible")){
+            UI.loadMenu.slideToggle(UI.menuSlideTime);
+        }
+
+        if(UI.saveMenu.is(":visible")){
+            UI.saveMenu.slideToggle(UI.menuSlideTime);
+        }
+    }
+
+    static toggleSaveMenu(){
+        UI.saveMenu.slideToggle(UI.menuSlideTime);
+
+        if(UI.loadMenu.is(":visible")){
+            UI.loadMenu.hide();
+        }
+    }
+
+    static toggleLoadMenu(){
+        UI.loadMenu.slideToggle();
+
+        if(UI.saveMenu.is(":visible")){
+            UI.saveMenu.hide();
+        }
+    }
+
+    static hideAllMenus(){
+        if(UI.fileMenu.is(":visible")){
+            UI.fileMenu.slideToggle(UI.menuSlideTime);
+        }
+
+        if(UI.saveMenu.is(":visible")){
+            UI.saveMenu.slideToggle(UI.menuSlideTime);
+        }
+
+        if(UI.loadMenu.is(":visible")){
+            UI.loadMenu.slideToggle(UI.menuSlideTime);
+        }
     }
 }
