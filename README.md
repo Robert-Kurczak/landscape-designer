@@ -1,4 +1,4 @@
-# Terrain generator
+# Landscape Designer
 Tool for operating on procedural generated, one or two dimensional height maps and terrains, with option to export them to 3D model.
 The project was created as part of learning algorithms for procedural content generation, developing JavaScript skills and creating an interface for the end user.
 
