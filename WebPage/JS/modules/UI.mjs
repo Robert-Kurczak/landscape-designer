@@ -2,16 +2,18 @@ export class UI{
     //------Previews------
     static previewsHolder = $("#previews");
 
-    //jQuery nodes of preview canvases
+    //---jQuery nodes of preview canvases---
     static previews = {"1D": $("#preview_1D"), "2D": $("#preview_2D"), "3D": $("#preview_3D")};
     static showPreview = [false, true, false];
+    //------
     
-    //Default previews htmls
+    //---Default previews htmls---
     static previewsHTML = {
         "1D": "<canvas id=\"preview_1D\"></canvas>",
         "2D": "<canvas id=\"preview_2D\"></canvas>",
         "3D": "<div id=\"preview_3D\"></div>"
     };
+    //------
 
     //Should be initialized
     static previewsSize = {width: 512, height: 512};
@@ -19,8 +21,7 @@ export class UI{
     static preview1DSlider = $("#preview_1D_slider");
     //------------
 
-    //------Upper panel------
-    // static fileMenuButton = $("#file_menu_button");
+    //---Upper panel---
     static menuSlideTime = 150;
 
     static fileMenu = $("#file_menu");
@@ -28,18 +29,25 @@ export class UI{
     static loadMenu = $("#load_menu");
 
     static saveStatus = $("#save_status");
-    //------------
+    //------
 
     //------Settings------
     static settingsPanel = $("#settings");
 
-    //Settings inputs
-    static octaveSlider = $("#octave_slider");
+    //---Settings inputs---
+    static octavesSlider = $("#octave_slider");
     static scaleSlider = $("#scale_slider");
     static seedInput = $("#seed_input");
     static heightFactorSlider = $("#height_factor_slider");
     static heightOffsetSlider = $("#height_offset_slider");
-    //------------
+    //------
+
+    //---Settings displays---
+    static octavesDisplay = $("#octaves_display");
+    static scaleDisplay = $("#scale_display");
+    static heightFactorDisplay = $("#height_factor_display");
+    static heightOffsetDisplay = $("#height_offset_display");
+    //------
 
     static layersPanel = $("#layers_panel");
 
@@ -47,11 +55,19 @@ export class UI{
     static inactiveColor = "rgb(33, 33, 33)";   //#212121
     
     static updateUIValues(layer){
-        UI.octaveSlider.val(layer.octavesAmount);
+        UI.octavesSlider.val(layer.octavesAmount);
+        UI.octavesDisplay.html(layer.octavesAmount);
+
         UI.scaleSlider.val(layer.scaleDivider);
+        UI.scaleDisplay.html(layer.scaleDivider);
+
         UI.seedInput.val(layer.seed);
+
         UI.heightFactorSlider.val(layer.heightFactor);
+        UI.heightFactorDisplay.html(layer.heightFactor);
+
         UI.heightOffsetSlider.val(layer.heightOffset);
+        UI.heightOffsetDisplay.html(layer.heightOffset);
     }
 
     static layerCounter = 0;

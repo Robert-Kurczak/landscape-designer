@@ -467,6 +467,12 @@ window.deleteLayer = function(node){
     }
 }
 
+window.updateTerrain = function(property, value){
+    TERRAINMAP.updateLayer(currentLayer, property, value);
+    printTerrain();
+    checkChanges();
+}
+
 //Function for changing changes status in upper panel
 window.checkChanges = function(){
     if(UI.saveStatus.text() == "Changes saved"){
@@ -583,7 +589,7 @@ function initialize(){
     window.printTerrain();
 
     //---Setting UI---
-    UI.octaveSlider.attr("max", Math.floor(Math.log2(TERRAINMAP.width)) + 1);
+    UI.octavesSlider.attr("max", Math.floor(Math.log2(TERRAINMAP.width)) + 1);
 
     UI.previewsSize.width = TERRAINMAP.width;
     UI.previewsSize.height = TERRAINMAP.height;

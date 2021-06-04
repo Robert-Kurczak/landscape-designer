@@ -106,62 +106,6 @@ export class Map{
         }
     }
     
-    //Print data from mergedMatrix to given canvas.
-    printTerrain(canvas, dimension = 2, yProfile = 0){
-        var ctx = canvas.getContext("2d");
-        var canvasData = ctx.createImageData(this.width, this.height);
-        
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        canvas.width = this.width;
-        canvas.height = this.height;
-
-        switch(dimension){
-            //To rework
-            //Axis should be somewhere in the middle
-            //Add support for negative values
-            case 1:
-                for(let x = 0; x < this.width; x++){
-                    var value = Math.round(this.mergedMatrix[yProfile][x]);
-        
-                    for(let y = this.height - 1 - value; y < this.height; y++){
-                        var pixelIndex = (y * this.width + x) * 4;
-        
-                        canvasData.data[pixelIndex + 0] = 0;    // Red value
-                        canvasData.data[pixelIndex + 1] = 255;  // Green value
-                        canvasData.data[pixelIndex + 2] = 0;    // Blue value
-                        canvasData.data[pixelIndex + 3] = 255;  // Alpha value
-                    }
-                }
-
-                break;
-
-            case 2:
-                var yIndex = 0;
-                var xIndex = 0;
-                for(let i = 0; i < canvasData.data.length; i += 4){
-                    var pixelColor = this.shader.color(this.mergedMatrix[yIndex][xIndex]);
-
-                    canvasData.data[i + 0] = pixelColor[0];     // Red value
-                    canvasData.data[i + 1] = pixelColor[1];     // Green value
-                    canvasData.data[i + 2] = pixelColor[2];     // Blue value
-                    canvasData.data[i + 3] = 255;               // Alpha value
-
-                    xIndex++;
-
-                    if(xIndex == this.width){
-                        xIndex = 0;
-                        yIndex++;
-                    }
-                }
-
-                break;
-        }
-
-        ctx.putImageData(canvasData, 0, 0);
-    }
-    //
-    
     //Updating layer based on user settings,
     //if canvas is given, printing updated terrain
     updateLayer(nLayer, property, value){
