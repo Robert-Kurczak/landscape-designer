@@ -5,11 +5,9 @@ import {defaultShader} from "./shader.mjs";
 
 window.TERRAINMAP = new Map(512, 512, defaultShader);
 
-//for test purpouses
-window.UI = UI;
-
 //---Functions for printing generated map to previews---
-window.print1D = function(y){
+function print1D(y){
+    //---Setting canvas node---
     var canvas = UI.previews["1D"][0];
 
     var ctx = canvas.getContext("2d");
@@ -18,6 +16,10 @@ window.print1D = function(y){
     canvas.width = TERRAINMAP.width;
     canvas.height = TERRAINMAP.height;
 
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //------
+
+    //---Values for color interpolation---
     var mapRow = TERRAINMAP.mergedMatrix[y];
     
     var maxRowValue = -Infinity;
@@ -37,22 +39,24 @@ window.print1D = function(y){
             minColorIndex = defaultShader.colorIndex(mapRow[x]);
         }
     }
+    //------
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+    //Height interpolation equation
     var a = (TERRAINMAP.height - 1) / (minRowValue - maxRowValue);
     var b = -maxRowValue * a;
 
-    //color interpolation
+    //Color interporation equation
     var aColor = (minColorIndex - maxColorIndex) / TERRAINMAP.height;
     var bColor = maxColorIndex;
 
-    var maxColorTreshold = 0;
+    //Threshold after which there is white color
+    var maxColorThreshold = 0;
 
     if(maxRowValue > 255){
-        maxColorTreshold = 255 * a + b;
+        maxColorThreshold = 255 * a + b;
     }
 
+    //---Filling canvas---
     for(let x = 0; x < TERRAINMAP.width; x++){
         var value = Math.floor(a * mapRow[x] + b);
 
@@ -60,7 +64,7 @@ window.print1D = function(y){
             var pixelIndex = (yIndex * TERRAINMAP.width + x) * 4;
             var color = color = [242, 242, 242];
 
-            if(yIndex >= maxColorTreshold){
+            if(yIndex >= maxColorThreshold){
                 color = defaultShader.mainGradient[Math.floor(aColor * yIndex + bColor)];
             }
 
@@ -72,9 +76,11 @@ window.print1D = function(y){
     }
 
     ctx.putImageData(canvasData, 0, 0);
+    //------
 }
 
 window.print2D = function(canvas = UI.previews["2D"][0]){
+    //---Setting canvas node---
     var ctx = canvas.getContext("2d");
     var canvasData = ctx.createImageData(TERRAINMAP.width, TERRAINMAP.height);
 
@@ -82,7 +88,9 @@ window.print2D = function(canvas = UI.previews["2D"][0]){
     canvas.height = TERRAINMAP.height;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //------
 
+    //---Filling canvas---
     var yIndex = 0;
     var xIndex = 0;
     for(let i = 0; i < canvasData.data.length; i += 4){
@@ -103,9 +111,10 @@ window.print2D = function(canvas = UI.previews["2D"][0]){
     }
 
     ctx.putImageData(canvasData, 0, 0);
+    //------
 }
 
-
+//Function for shaping plane geometry according to TERRAINMAP.mergedMatrix
 function shapeObject(geometry){
     var verticles = geometry.attributes.position.array;
 
@@ -128,6 +137,7 @@ function shapeObject(geometry){
     return geometry;
 }
 
+//Function for texturing material according to TERRAINMAP.mergedMatrix
 function textureObject(geometryMaterial){
     //Getting texture from existing canvas for 2D preview if it's shown
     if(UI.showPreview[1]){
@@ -208,18 +218,23 @@ window.print3D = function(){
 
         preview3DCamera.position.z = TERRAINMAP.height + 100;
 
+        //---Control of generated scene---
+        const controls = new THREE.OrbitControls(preview3DCamera, preview3DRenderer.domElement);
+        controls.movementSpeed = 10;
+        controls.lookSpeed = 0.000001;
+        //------
+
+        //---Redrawing scene---
         function animate(){
             requestAnimationFrame(animate);
         
             preview3DRenderer.render(preview3DScene, preview3DCamera);
         }
-
-        const controls = new THREE.OrbitControls(preview3DCamera, preview3DRenderer.domElement);
-        controls.movementSpeed = 10;
-        controls.lookSpeed = 0.000001;
         
         animate();
+        //------
     }
+    //Updating existing 3D object
     else{
         terrainGeometry = shapeObject(terrainGeometry);
         geometryMaterial = textureObject(geometryMaterial);
@@ -251,7 +266,7 @@ window.printTerrain = function(){
 function JSONfromLayers(){
     var JSONcontent = [];
 
-    //Removing matrixes (too large to store)
+    //---Removing matrixes (too large to store)---
     for(var layer of TERRAINMAP.layers){
         var layerCopy = {...layer};
 
@@ -260,7 +275,7 @@ function JSONfromLayers(){
 
         JSONcontent.push(layerCopy);
     }
-    //
+    //------
 
     return JSON.stringify(JSONcontent);
 }
@@ -270,12 +285,14 @@ function layersFromJSON(JSONstring){
 
     TERRAINMAP.layers = JSON.parse(JSONstring);
 
+    //---Rebuilding matrixes from layers settings---
     for(let nLayer in TERRAINMAP.layers){
         TERRAINMAP.generateNoise(nLayer)
         TERRAINMAP.smooth(nLayer);
 
         UI.addLayerNode(nLayer);
     }
+    //------
 
     printTerrain();
 }
@@ -286,46 +303,55 @@ window.saveToBrowser = function(){
     UI.saveStatus.text("Changes saved");
 }
 
-window.loadFromBrowser = function(){
-    layersFromJSON(localStorage.getItem("layersData"));
-}
-
-window.loadFromJSON = function(){
-    var uploader = document.createElement("input");
-    uploader.setAttribute("type", "file");
-    uploader.setAttribute("accept", ".json");
-
-    uploader.onchange = function(){
-        var reader = new FileReader();
-
-        reader.onload = function(file){
-            layersFromJSON(file.target.result);
-        };
-
-        reader.readAsText(uploader.files[0]);
-    };
-
-    uploader.click();
-}
-
 window.saveToJSON = function(){
+    //---Creating virtual anchor---
     var a = document.createElement("a");
     var file = new Blob([JSONfromLayers()], {type: "application/json"});
     
     a.href = URL.createObjectURL(file);
     a.download = "TerrainJSON.json";
+    //------
+
     a.click();
+
+    URL.revokeObjectURL(a.href);
+}
+
+window.saveHeightMap = function(){
+    //---Creating virtual anchor---
+    var a = document.createElement("a");
+    var content = JSON.stringify(TERRAINMAP.mergedMatrix);
+
+    //---Refractoring matrix---
+    //Removing comas, brackets
+    //Adding \n after every row
+    content = content.slice(2, content.length - 2).replaceAll("],[", "\n").replaceAll(",", " ");
+
+    var file = new Blob([content], {type: "txt"});
+    
+    a.href = URL.createObjectURL(file);
+    a.download = "TerrainHeightMap.txt";
+    //------
+
+    a.click();
+    
     URL.revokeObjectURL(a.href);
 }
 
 window.saveImage = function(){
+    //---Creating virtual canvas and filling it with 2D preview---
     var canvas = document.createElement("canvas");
     print2D(canvas);
-
+    //------
+    
+    //---Creating virtual anchor---
     var a = document.createElement("a");
     a.href = canvas.toDataURL("image/png");
-    a.download = "TerrainPNG";
+    a.download = "TerrainPNG.png";
+    //------
+
     a.click();
+
     URL.revokeObjectURL(a.href);
 }
 
@@ -346,28 +372,66 @@ window.saveOBJ = function(){
 
     var exporter = new THREE.OBJExporter();
 
+    //---Creating virtual anchor---
     var a = document.createElement("a");
     var file = new Blob([exporter.parse(terrainPlane)], {type: "obj"});
 
     a.href = URL.createObjectURL(file);
     a.download = "TerrainOBJ.obj";
+    //------
+
     a.click();
+
     URL.revokeObjectURL(a.href);
 }
-//window.onbeforeunload = saveSettings(TERRAINMAP.layers);
+
+window.loadFromBrowser = function(){
+    layersFromJSON(localStorage.getItem("layersData"));
+}
+
+window.loadFromJSON = function(){
+    //---Creating virtual input---
+    var uploader = document.createElement("input");
+    uploader.setAttribute("type", "file");
+    uploader.setAttribute("accept", ".json");
+    //------
+
+    uploader.onchange = function(){
+        var fileName = uploader.files[0].name;
+
+        if(fileName.slice(fileName.indexOf(".") + 1) == "json"){
+            var reader = new FileReader();
+
+            reader.onload = function(file){
+                layersFromJSON(file.target.result);
+            };
+    
+            reader.readAsText(uploader.files[0]);
+        }
+        else{
+            window.alert("Incorrect file format");
+        }
+    };
+
+    uploader.click();
+}
+
 //------
 
-//---Functions connecting modules---
 window.currentLayer = 0;
 var lastLayerNode = null;
 
 window.changeLayer = function(node){
+    //---Changing layers nodes colors---
+    //Active layer -> active color
+    //Previously active layer -> inactive color
     if(lastLayerNode != null){
         lastLayerNode.css("background-color", UI.inactiveColor);
     }
 
     $(node).css("background-color", UI.activeColor);
     lastLayerNode = $(node);
+    //------
     
     var nLayer = $(node).parent().index();
 
@@ -376,9 +440,11 @@ window.changeLayer = function(node){
 }
 
 window.newLayer = function(){
+    //---Creating new layer object and filling it with matrixes---
     TERRAINMAP.layers.push(new mapLayer);
     TERRAINMAP.generateNoise(TERRAINMAP.layers.length - 1)
     TERRAINMAP.smooth(TERRAINMAP.layers.length - 1)
+    //------
 
     UI.addLayerNode();
 
@@ -400,28 +466,29 @@ window.deleteLayer = function(node){
     }
 }
 
+//Function for changing changes status in upper panel
 window.checkChanges = function(){
     if(UI.saveStatus.text() == "Changes saved"){
         UI.saveStatus.text("Changes unsaved");
     }
 }
 
-//might move to UI.mjs
 window.togglePreview = function(n){
     var index = n - 1;
     var dimension = n + "D";
 
     if(UI.showPreview[index]){
-        //UI.previewsHTMLdata[dimension] = UI.previewsHolder.children().eq(index).html();
         UI.previews[dimension].remove();
 
         UI.showPreview[index] = false;
     }
     else{
+        //---Rebuilding preview node based on initial HTML code---
         UI.previewsHolder.children().eq(index).append(UI.previewsHTML[dimension]);
 
         UI.previews[dimension] = $("#preview_" + dimension);
         UI.previews[dimension].css({width: UI.previewsSize.width, height: UI.previewsSize.height});
+        //------
 
         UI.showPreview[index] = true;
     }
@@ -435,17 +502,18 @@ window.togglePreview = function(n){
 
 window.updatePreviewsSize = function(){
     for(let i = 0; i < 3; i++){
+        
         if(UI.showPreview[i]){
+            //Changing scene size for preview 3D (outer div and inner canvas)
+            if(i == 2){
+                UI.previews["3D"].children().css({width: UI.previewsSize.width + "px", height: UI.previewsSize.height + "px"});
+            }
+            
             UI.previews[(i + 1) + "D"].css({width: UI.previewsSize.width + "px", height: UI.previewsSize.height + "px"});
 
-            //Changing scene size for preview 3D
-            if(i == 2){
-                UI.previews[(i + 1) + "D"].children().css({width: UI.previewsSize.width + "px", height: UI.previewsSize.height + "px"});
-            }
         }
     }
 }
-//------
 
 //------Listeners------
 
@@ -482,7 +550,7 @@ function previewZoom(event){
 document.onwheel = function(event){previewZoom(event);}
 //---
 
-//---Hidding menus---
+//---Hiding menus when user clicked outside of them---
 $(document).click(function(event){
     const target = $(event.target);
 
@@ -513,7 +581,7 @@ function initialize(){
 
     window.printTerrain();
 
-    //Setting UI
+    //---Setting UI---
     UI.octaveSlider.attr("max", Math.floor(Math.log2(TERRAINMAP.width)) + 1);
 
     UI.previewsSize.width = TERRAINMAP.width;
@@ -523,14 +591,14 @@ function initialize(){
     UI.preview1DSlider.hide();
 
     UI.previews["2D"].width(TERRAINMAP.width + "px");
-    //
+    //------
 
-    //Centering div with JQuery so I can omit using transform - which would make draggable behave strangly
+    //---Centering div with JQuery so I can omit using transform - which would make draggable behave strangely---
     UI.previewsHolder.css({
         "top": (($(window).height() - UI.previewsHolder.outerHeight()) / 2 + $(window).scrollTop() + "px"),
         "left": (($(window).width() - UI.previewsHolder.outerWidth()) / 2 + $(window).scrollLeft() + "px")
     });
-    //
+    //------
     
     UI.previewsHolder.draggable();
 }
