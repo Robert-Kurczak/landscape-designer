@@ -4,6 +4,7 @@ import {mapLayer} from "./layers.mjs";
 import {defaultShader} from "./shader.mjs";
 
 window.TERRAINMAP = new Map(512, 512, defaultShader);
+window.UI = UI;
 
 //---Functions for printing generated map to previews---
 function print1D(y){
