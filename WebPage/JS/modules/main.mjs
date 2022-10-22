@@ -7,7 +7,7 @@ window.TERRAINMAP = new Map(512, 512, defaultShader);
 window.UI = UI;
 
 //---Functions for printing generated map to previews---
-function print1D(y){
+window.print1D = function print1D(y){
     //---Setting canvas node---
     var canvas = UI.previews["1D"][0];
 
