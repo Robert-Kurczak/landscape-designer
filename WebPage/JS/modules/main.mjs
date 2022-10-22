@@ -284,14 +284,11 @@ function JSONfromLayers(){
 function layersFromJSON(JSONstring){
     UI.clearLayersNodes();
 
-    TERRAINMAP.layers = JSON.parse(JSONstring);
+    TERRAINMAP.layers = [];
 
     //---Rebuilding matrixes from layers settings---
-    for(let nLayer in TERRAINMAP.layers){
-        TERRAINMAP.generateNoise(nLayer)
-        TERRAINMAP.smooth(nLayer);
-
-        UI.addLayerNode(nLayer);
+    for(let nLayer of JSON.parse(JSONstring)){
+        window.newLayer(nLayer);
     }
     //------
 
@@ -440,9 +437,9 @@ window.changeLayer = function(node){
     UI.updateUIValues(TERRAINMAP.layers[nLayer]);
 }
 
-window.newLayer = function(){
+window.newLayer = function(layer=new mapLayer){
     //---Creating new layer object and filling it with matrixes---
-    TERRAINMAP.layers.push(new mapLayer);
+    TERRAINMAP.layers.push(layer);
     TERRAINMAP.generateNoise(TERRAINMAP.layers.length - 1)
     TERRAINMAP.smooth(TERRAINMAP.layers.length - 1)
     //------
@@ -464,6 +461,10 @@ window.deleteLayer = function(node){
         printTerrain();
 
         UI.removeLayerNode(node);
+
+        if(UI.layersPanel.children().length == 1){
+            UI.settingsPanel.hide();
+        }
     }
 }
 
