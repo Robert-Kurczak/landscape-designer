@@ -20,15 +20,12 @@ I wanted to try myself and implement algorythm on my own rather than using ready
     * Three.js r128
     * JQuery 3.6.0
     * JQuery UI 1.12.1
- 2. Electron 13.0.1
- 3. electron-packager 15.2.0
- 4. electron-wix-msi 3.2.0
- 5. HTML5
- 6. CSS
+ 2. HTML5
+ 3. CSS
 
 ## Setup
   ### Option 1
-   Download built electron app from "ElectronApp-builds" folder (either zipped folder or msi installer) and run executable file.
+   Visit https://landscape-designer.netlify.app/
   ### Option 2
    Download WebPage folder, host it on your local server and run it in browser.
 
